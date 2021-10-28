@@ -1,0 +1,13 @@
+.vscode/
+*.mrc
+20s_10025
+20210803_monomer_Sustech
+data_multi/
+downloads/
+figures/
+models/
+gpr158sustech0427
+more_particle_images/
+outdated/
+particleSeg/
+train_particleSeg/
