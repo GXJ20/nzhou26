@@ -8,6 +8,7 @@ import numpy as np
 import multiprocessing
 from scipy.ndimage import convolve
 
+#your input here
 project_dir = '20s_10025'
 mask_path = f"{project_dir}/MaskCreate/job029/mask.mrc"
 meta_data_path = f'{project_dir}/Refine3D/job026/run_data.star'
