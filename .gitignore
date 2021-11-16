@@ -18,7 +18,6 @@ data_for_training/
 history.csv
 __pycache__/
 empiar_db_json/
-*.ipynb
 20210715
 useful_data.csv
 particleSeg_recon
