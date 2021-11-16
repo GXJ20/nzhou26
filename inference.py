@@ -10,23 +10,24 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.preprocessing.image import load_img
 import matplotlib.pyplot as plt
+import pathlib
 
 # edit these four parameters below
 process_number = 17
-project_dir = "gpr158sustech0427/"
-star_path = f"{project_dir}Extract/job009/particles_copy.star"
-model_path = "models/particle_segmentation.h5"
+project_id = "gpr158_3d"
+raw_data_dir = f"gpr158_3d/Extract/job005/goodmrc_0123/"
+model_path = "particle_segmentation.h5"
 
 
-output_folder = f"particleSeg/{project_dir}"
-converted_png_path = f"{output_folder}png/"
-predicted_mask_path = f"{output_folder}mask/"
-altered_mrcs_path = f"{output_folder}mrcs/"
-os.system(f'mkdir -p {converted_png_path}')
-os.system(f'mkdir -p {predicted_mask_path}')
-os.system(f'mkdir -p {altered_mrcs_path}')
+output_folder = f"pred_{project_id}"
+# converted_png_path = f"{output_folder}png/"
+# predicted_mask_path = f"{output_folder}mask/"
+# altered_mrcs_path = f"{output_folder}mrcs/"
+# os.system(f'mkdir -p {converted_png_path}')
+# os.system(f'mkdir -p {predicted_mask_path}')
+# os.system(f'mkdir -p {altered_mrcs_path}')
 
-img_size = (160, 160)
+img_size = (256, 256)
 num_classes = 3
 batch_size = 256
 
@@ -209,11 +210,15 @@ def run_prediction():
             save_masks(j, val_preds, pred_batch, data_img_paths)
         percent = "{:.2%}".format(i/num_iters)
         print(f"Predicting masks, progress: {percent}")
-
+def inference():
+    data_img_paths = list(pathlib.Path(raw_data_dir).glob('*.mrcs'))
+    for item in data_img_paths:
+        print(item)
 if __name__ == "__main__":
-    gen_png_multi()
-    run_prediction()
-    alter_mrcs_multi()
+    inference()
+    # gen_png_multi()
+    # run_prediction()
+    # alter_mrcs_multi()
 
 
 

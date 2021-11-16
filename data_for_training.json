@@ -1,0 +1,19 @@
+[
+    {
+        "dataset_name" : "20s_10025",
+        "mask_path" : "20s_10025/MaskCreate/job029/mask.mrc",
+        "meta_data_path" : "20s_10025/Refine3D/job026/run_data.star",
+        "raw_data_dir" : "20s_10025/Extract/job011/mrc/",
+        "threshold" : 10,
+        "number_of_particles_to_process" : 10000
+    },
+    {
+        "dataset_name" : "20210715_aldo",
+        "map_path": "20210715/Refine3D/job019/run_class001.mrc",
+        "mask_path" : "20210715/MaskCreate/job017/mask.mrc",
+        "meta_data_path" : "20210715/Refine3D/job019/run_data.star",
+        "raw_data_dir" : "20210715/Extract/job012/goodMRC/",
+        "threshold" : 10,
+        "number_of_particles_to_process" : 30000
+    }
+]
