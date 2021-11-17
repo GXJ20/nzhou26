@@ -9,7 +9,6 @@ import multiprocessing
 from scipy.ndimage import convolve
 from datetime import datetime
 import pandas as pd
-#your input here
 
 train_data_path = 'data_for_training.json'
 
@@ -46,7 +45,8 @@ def generate_label_and_raw(processName, meta_data, idx, end_idx):
                 psi = row['rlnAnglePsi']
                 xoff = row['rlnOriginX']
                 yoff = row['rlnOriginY']
-                os.system(f'relion_project --i {mask_path} --o {output_mask_dir}{single_slice_name} --rot {rot} --tilt {tilt} --psi {psi} --xoff {xoff} --yoff {yoff} > /dev/null 2>&1')
+                project_command = f'relion_project --i {mask_path} --o {output_mask_dir}{single_slice_name} --rot {rot} --tilt {tilt} --psi {psi} --xoff {xoff} --yoff {yoff} > /dev/null 2>&1'
+                os.system(project_command)
                 with mrcfile.open(f'{output_mask_dir}{single_slice_name}') as mrc:
                     mask_proj = mrc.data
                 mask_proj.setflags(write=1)
@@ -91,7 +91,7 @@ def preprocessing():
 
 if __name__ == "__main__":
     all_datasets = pd.read_json(train_data_path)
-    process_number = 20
+    process_number = 16
     for i in range(len(all_datasets)):
         row = all_datasets.iloc[i]
         dataset_name = row['dataset_name']

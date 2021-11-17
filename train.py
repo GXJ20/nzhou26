@@ -13,6 +13,7 @@ from datetime import date
 from particle import *
 mirroted_strategy = tf.distribute.MirroredStrategy()
 
+lowpass = False
 data_dir = 'data_for_training'
 img_size = (256, 256)
 num_classes = 3
@@ -134,11 +135,13 @@ train_target_img_paths = target_img_paths[:-val_samples]
 val_input_img_paths = input_img_paths[-val_samples:]
 val_target_img_paths = target_img_paths[-val_samples:]
 
-# Instantiate data Sequences for each split
-train_gen = particles(
-    batch_size, img_size, train_input_img_paths, train_target_img_paths
-)
-val_gen = particles(batch_size, img_size, val_input_img_paths, val_target_img_paths)
+
+if lowpass:
+    train_gen = lp_particles(batch_size, img_size, train_input_img_paths, train_target_img_paths)
+    val_gen = lp_particles(batch_size, img_size, val_input_img_paths, val_target_img_paths)
+else:
+    train_gen = particles(batch_size, img_size, train_input_img_paths, train_target_img_paths)
+    val_gen = particles(batch_size, img_size, val_input_img_paths, val_target_img_paths)
 
 
 # %%
