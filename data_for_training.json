@@ -1,6 +1,7 @@
 [
     {
         "dataset_name" : "20s_10025",
+        "map_path": "20s_10025/Refine3D/job026/run_class001.mrc",
         "mask_path" : "20s_10025/MaskCreate/job029/mask.mrc",
         "meta_data_path" : "20s_10025/Refine3D/job026/run_data.star",
         "raw_data_dir" : "20s_10025/Extract/job011/mrc/",
@@ -14,7 +15,35 @@
         "meta_data_path" : "20210715/Refine3D/job019/run_data.star",
         "raw_data_dir" : "20210715/Extract/job012/goodMRC/",
         "threshold" : 10,
-        "number_of_particles_to_process" : 30000
+        "number_of_particles_to_process" : 40000
+    },
+    {
+        "dataset_name" : "cleaved_rhs_mono",
+        "map_path": "/storage_data/zhou_Ningkun/relionProject/rhs-xl-mono/Refine3D/job168/run_class001.mrc",
+        "mask_path" : "/storage_data/zhou_Ningkun/relionProject/rhs-xl-mono/MaskCreate/job147/mask.mrc",
+        "meta_data_path" : "/storage_data/zhou_Ningkun/relionProject/rhs-xl-mono/Refine3D/job168/run_data.star",
+        "raw_data_dir" : "/storage_data/zhou_Ningkun/relionProject/rhs-xl-mono/Polish/job163/movies/",
+        "threshold" : 10,
+        "number_of_particles_to_process" : 40000
+    },
+    {
+        "dataset_name" : "empiar_10049",
+        "map_path": "particleSeg_recon/empiar_10049/Refine3D/job007/run_class001.mrc",
+        "mask_path" : "particleSeg_recon/empiar_10049/MaskCreate/job008/mask.mrc",
+        "meta_data_path" : "particleSeg_recon/empiar_10049/Refine3D/job007/run_data.star",
+        "raw_data_dir" : "particleSeg_recon/empiar_10049/data/",
+        "threshold" : 10,
+        "number_of_particles_to_process" : 40000,
+        "skip" : "True"
+    },
+    {
+        "dataset_name" : "empiar_10059",
+        "map_path": "particleSeg_recon/empiar_10059/Refine3D/job006/run_class001.mrc",
+        "mask_path" : "particleSeg_recon/empiar_10059/MaskCreate/job007/mask.mrc",
+        "meta_data_path" : "particleSeg_recon/empiar_10059/Refine3D/job006/run_data.star",
+        "raw_data_dir" : "particleSeg_recon/empiar_10059/data/particles/",
+        "threshold" : 10,
+        "number_of_particles_to_process" : 40000
     },
     {
         "dataset_name" : "empiar_10081",
@@ -23,16 +52,7 @@
         "meta_data_path" : "particleSeg_recon/empiar_10081/Refine3D/job004/run_data.star",
         "raw_data_dir" : "particleSeg_recon/empiar_10081/data/particle_stacks/",
         "threshold" : 10,
-        "number_of_particles_to_process" : 30000
-    },
-    {
-        "dataset_name" : "empiar_10255",
-        "map_path": "particleSeg_recon/empiar_10255/Refine3D/job005/run_class001.mrc",
-        "mask_path" : "particleSeg_recon/empiar_10255/MaskCreate/job006/mask.mrc",
-        "meta_data_path" : "particleSeg_recon/empiar_10255/Refine3D/job005/run_data.star",
-        "raw_data_dir" : "particleSeg_recon/empiar_10255/data/Micrographs/",
-        "threshold" : 10,
-        "number_of_particles_to_process" : 30000
+        "number_of_particles_to_process" : 40000
     },
     {
         "dataset_name" : "empiar_10126",
@@ -41,6 +61,44 @@
         "meta_data_path" : "particleSeg_recon/empiar_10126/Refine3D/job009/run_ct23_it023_data.star",
         "raw_data_dir" : "particleSeg_recon/empiar_10126/data/",
         "threshold" : 10,
-        "number_of_particles_to_process" : 30000
+        "number_of_particles_to_process" : 40000
+    },
+    {
+        "dataset_name" : "empiar_10253",
+        "map_path": "particleSeg_recon/empiar_10253/Refine3D/job003/run_class001.mrc",
+        "mask_path" : "particleSeg_recon/empiar_10253/MaskCreate/job004/mask.mrc",
+        "meta_data_path" : "particleSeg_recon/empiar_10253/Refine3D/job003/run_data.star",
+        "raw_data_dir" : "particleSeg_recon/empiar_10253/",
+        "threshold" : 10,
+        "number_of_particles_to_process" : 40000,
+        "skip" : "True"
+    },
+    {
+        "dataset_name" : "empiar_10254",
+        "map_path": "particleSeg_recon/empiar_10254/Refine3D/job003/run_class001.mrc",
+        "mask_path" : "particleSeg_recon/empiar_10254/MaskCreate/job004/mask.mrc",
+        "meta_data_path" : "particleSeg_recon/empiar_10254/Refine3D/job003/run_data.star",
+        "raw_data_dir" : "particleSeg_recon/empiar_10254/Extract/job003/Micrographs/",
+        "threshold" : 10,
+        "number_of_particles_to_process" : 40000
+    },
+    {
+        "dataset_name" : "empiar_10255",
+        "map_path": "particleSeg_recon/empiar_10255/Refine3D/job005/run_class001.mrc",
+        "mask_path" : "particleSeg_recon/empiar_10255/MaskCreate/job006/mask.mrc",
+        "meta_data_path" : "particleSeg_recon/empiar_10255/Refine3D/job005/run_data.star",
+        "raw_data_dir" : "particleSeg_recon/empiar_10255/data/Micrographs/",
+        "threshold" : 10,
+        "number_of_particles_to_process" : 40000
+    },
+    {
+        "dataset_name" : "empiar_10256",
+        "map_path": "particleSeg_recon/empiar_10256/Refine3D/job003/run_class001.mrc",
+        "mask_path" : "particleSeg_recon/empiar_10256/MaskCreate/job004/mask.mrc",
+        "meta_data_path" : "particleSeg_recon/empiar_10256/Refine3D/job003/run_data.star",
+        "raw_data_dir" : "particleSeg_recon/empiar_10256/data/Micrographs/",
+        "threshold" : 10,
+        "number_of_particles_to_process" : 40000
     }
+    
 ]

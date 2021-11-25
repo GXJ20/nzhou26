@@ -3,11 +3,8 @@
 # %%
 import os
 import random
-import numpy as np
 import tensorflow as tf
 import pathlib
-from scipy.ndimage import gaussian_filter
-import cv2
 import pandas as pd
 from datetime import date
 from particle import *
@@ -125,30 +122,46 @@ model.summary()
 
 
 # %%
-
-# Split our img paths into a training and a validation set
-val_samples = int(len(input_img_paths)//5)
 random.Random(1337).shuffle(input_img_paths)
 random.Random(1337).shuffle(target_img_paths)
-train_input_img_paths = input_img_paths[:-val_samples]
-train_target_img_paths = target_img_paths[:-val_samples]
-val_input_img_paths = input_img_paths[-val_samples:]
-val_target_img_paths = target_img_paths[-val_samples:]
+# input_img_paths = input_img_paths[:150000]
+# target_img_paths = target_img_paths[:150000]
+# Split our img paths into a training and a validation set
+test_samples = int(len(input_img_paths)//5)
+val_samples = int(len(input_img_paths)//5*4//5)
+print(f"total: {len(input_img_paths)}")
+print(f"test samples: {test_samples}")
+print(f"val sample: {val_samples}")
+train_input_img_paths = input_img_paths[:-test_samples]
+train_target_img_paths = target_img_paths[:-test_samples]
+test_input_img_paths = input_img_paths[-test_samples:]
+test_target_img_paths = target_img_paths[-test_samples:]
 
+val_input_img_paths = train_input_img_paths[-val_samples:]
+val_target_img_paths = train_target_img_paths[-val_samples:]
+train_input_img_paths = train_input_img_paths[:-val_samples]
+train_target_img_paths = train_target_img_paths[:-val_samples]
+print(len(train_input_img_paths))
+print(len(val_input_img_paths))
+print(len(test_input_img_paths))
 
 if lowpass:
     train_gen = lp_particles(batch_size, img_size, train_input_img_paths, train_target_img_paths)
     val_gen = lp_particles(batch_size, img_size, val_input_img_paths, val_target_img_paths)
+    test_gen = lp_particles(batch_size, img_size, test_input_img_paths, test_target_img_paths)
+    base_model_name = 'particle_segmentation_lp'
 else:
     train_gen = particles(batch_size, img_size, train_input_img_paths, train_target_img_paths)
     val_gen = particles(batch_size, img_size, val_input_img_paths, val_target_img_paths)
-
+    test_gen = particles(batch_size, img_size, test_input_img_paths, test_target_img_paths)
+    base_model_name = 'particle_segmentation'
+base_model_name = f'{base_model_name}-{date.today()}'
 
 # %%
 #opt = keras.optimizers.Adam(learning_rate=5e-4)
 
 callbacks = [
-    tf.keras.callbacks.ModelCheckpoint(f"models/particle_segmentation_lp-{date.today()}.h5", save_best_only=True),
+    tf.keras.callbacks.ModelCheckpoint(f"models/{base_model_name}.h5", save_best_only=True),
     tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=3)
 ]
 
@@ -156,8 +169,12 @@ callbacks = [
 epochs = 15
 history = model.fit(train_gen, epochs=epochs,  callbacks=callbacks, validation_data=val_gen,)
 hist_df = pd.DataFrame(history.history)
-
-hist_csv_file = 'history.csv'
+model = tf.keras.models.load_model(f"models/{base_model_name}.h5", custom_objects={"UpdatedMeanIoU": UpdatedMeanIoU})
+model.compile(optimizer='rmsprop', loss="sparse_categorical_crossentropy", metrics=[UpdatedMeanIoU(num_classes=3)])
+loss, iou = model.evaluate(test_gen)
+iou = "{0:.2%}".format(iou)[:-1]
+hist_csv_file = f'models/{iou}--{len(input_img_paths)}--{base_model_name}-history.csv'
+os.system(f"mv models/{base_model_name}.h5 models/{iou}--{len(input_img_paths)}--{base_model_name}.h5")
 with open(hist_csv_file, mode='w') as f:
     hist_df.to_csv(f)
 

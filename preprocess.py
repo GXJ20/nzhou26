@@ -91,7 +91,8 @@ def preprocessing():
 
 if __name__ == "__main__":
     all_datasets = pd.read_json(train_data_path)
-    process_number = 16
+    all_datasets = all_datasets[all_datasets['skip'] != 'True']
+    process_number = 10
     for i in range(len(all_datasets)):
         row = all_datasets.iloc[i]
         dataset_name = row['dataset_name']
