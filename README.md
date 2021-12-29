@@ -2,6 +2,9 @@
 `particleSeg` is a deep learning-based segmentation tool for cryo-EM particles.
 ![work_flow](images/workflow.png)
 
+## Installation
+```
+conda 
 ## Usage
 ```
 usage: segParticles.py [-h] [--train TRAIN] [--infer INFER] [--raw_data RAW_DATA]
