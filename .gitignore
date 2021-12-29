@@ -1,15 +1,3 @@
 .vscode/
-20s_10025
-20210803_monomer_Sustech
-downloads/
-models/
-gpr158_3d
-tmp/
-outdated/
-data_for_training/
-history.csv
 __pycache__/
-empiar_scrap/
-20210715
-particleSeg_recon
-.ipynb_checkpoints/
+outdated/
