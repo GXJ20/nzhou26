@@ -1,2 +1,2 @@
 # particleSeg
-Segmentation tool for particles in cryo-EM micrographs
+Segmentation tool for cryo-EM particles
