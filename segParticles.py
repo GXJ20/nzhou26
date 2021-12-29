@@ -1,8 +1,5 @@
 #%%
-
 import argparse
-from inference import Inference_star
-from train import Train
 parser = argparse.ArgumentParser(description='ParticleSeg: Segment your particles')
 parser.add_argument('--train', type=str, default=None, help='Train models with current dataset.')
 parser.add_argument('--infer', type=str, default=None, help='Take a metadata(starfile) and return cleaned metadata.')
@@ -16,6 +13,9 @@ base_models = [
   'EfficientNetB0',
   'ResNet101'
 ]
+
+from inference import Inference_star
+from train import Train
 def train(model_name, num_to_use):
     model_Train = Train(model_name=model_name, num_to_use=num_to_use)
     model_Train.train()
