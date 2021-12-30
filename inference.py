@@ -101,6 +101,7 @@ class Inference_star():
         model_paths = sorted(model_paths, key=lambda model: model.name.split('--')[0], reverse=True)    
         seg_model = model_paths[0]
         print(f'Using segmentation model: {seg_model.name}')
+        self.model_IOU = seg_model.name.split('--')[0]
         model = tf.keras.models.load_model(seg_model, custom_objects={"UpdatedMeanIoU": UpdatedMeanIoU})
         model.compile(optimizer='rmsprop', loss="sparse_categorical_crossentropy", metrics=[UpdatedMeanIoU(num_classes=3)])
         raw_npy_path = pathlib.Path(output_folder)
@@ -173,7 +174,7 @@ class Inference_star():
             self.metadata = self.metadata.drop(self.metadata[self.metadata['rlnImageName'] == ImageName].index)
             percent = "{:.2%}".format(i/num_to_drop)
             print(f"Dropping bad particles, progress: {percent}")
-        starfile.write(self.metadata, f'{os.path.dirname(self.star_file)}/{self.model_MAE}{os.path.basename(self.star_file)}')
+        starfile.write(self.metadata, f'{os.path.dirname(self.star_file)}/{self.model_IOU}--{self.model_MAE}{os.path.basename(self.star_file)}')
         os.system(f'rm -rf {output_folder}')
         print(f'Done and saved cleaned metadata in {os.path.dirname(self.star_file)}/{self.model_MAE}{os.path.basename(self.star_file)}')
 

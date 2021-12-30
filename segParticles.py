@@ -3,7 +3,7 @@ import argparse
 parser = argparse.ArgumentParser(description='ParticleSeg: Segment your particles')
 parser.add_argument('--train', type=str, default=None, help='Train models with current dataset.')
 parser.add_argument('--infer', type=str, default=None, help='Take a metadata(starfile) and return cleaned metadata.')
-parser.add_argument('--raw_data', type=str, default=None, help='Take raw data directory if metadata for inference is provided.')
+parser.add_argument('--raw_data', type=str, default=None, help='Take raw data directory(where *.mrcs stored) if metadata for inference is provided.')
 args = parser.parse_args()
 base_models = [
   'custom',
