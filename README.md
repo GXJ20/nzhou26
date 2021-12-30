@@ -54,4 +54,4 @@ base_models = [
 ]
 ```
 ## Getting Help
-please contact nzhou26@outlook.com 
+Please contact nzhou26@outlook.com 
