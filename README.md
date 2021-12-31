@@ -20,7 +20,6 @@ pip install -r requirement.txt
 pip install -q git+https://github.com/tensorflow/examples.git
 ```
 ## Usage
-Basic usage:
 ```
 usage: segParticles.py [-h] [--train TRAIN] [--infer INFER] [--raw_data RAW_DATA]
 ParticleSeg: Segment your particles
@@ -30,7 +29,7 @@ optional arguments:
   --infer INFER        Take a metadata(starfile) and return cleaned metadata.
   --raw_data RAW_DATA  Take raw data directory(where *.mrcs stored) if metadata for inference is provided.
 ```
-Train all pretrained models provided with 25600 particles to test performance of each model
+Train all pretrained models provided 25600 particles to test performance of each model
 ```
 python segParticles.py --train all
 ```
@@ -40,7 +39,7 @@ python segParticles.py --train DenseNet169
 ```
 Inference your particles
 ```
-python segParticles.py --infer /path/to/your/particles.star --raw /path/to/your/raw/
+python segParticles.py --infer /path/to/your/particles.star --raw_data /path/to/your/raw/
 ```
 ## Pretrained custom models
 ```
@@ -53,3 +52,5 @@ base_models = [
   'ResNet101'
 ]
 ```
+## Getting Help
+Please contact nzhou26@outlook.com 
