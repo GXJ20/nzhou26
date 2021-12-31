@@ -22,13 +22,15 @@ class particles(tf.keras.utils.Sequence):
         i = idx * self.batch_size
         batch_input_img_paths = self.input_img_paths[i : i + self.batch_size]
         batch_target_img_paths = self.target_img_paths[i : i + self.batch_size]
+        
         if self.fold == 1:
-            x,y = self.__transform(batch_input_img_paths, batch_target_img_paths)
+            x,y = self.__transform(batch_input_img_paths, batch_target_img_paths, 0.3)
+        elif self.fold == 0:
+            x,y = self.__transform(batch_input_img_paths, batch_target_img_paths, 0)
         else:
             x,y = self.__augmentation(batch_input_img_paths, batch_target_img_paths, self.fold)
         return x, y
-    def __transform(self, batch_input_img_paths, batch_target_img_paths):
-        shift = 0.3
+    def __transform(self, batch_input_img_paths, batch_target_img_paths, shift):
         h, w = self.img_size
         tx = np.random.uniform(-shift, shift)*h
         ty = np.random.uniform(-shift, shift)*w

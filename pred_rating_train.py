@@ -170,6 +170,7 @@ model = tf.keras.Sequential([
                                                                 width_factor=0.3,
                                                                 fill_mode='constant',
                                                                 fill_value=1),
+    # specify base model from TF hub when building model for training
     hub.KerasLayer(model_handle, trainable=do_fine_tuning),
     tf.keras.layers.Dropout(rate=0.2),
     tf.keras.layers.Dense(1)

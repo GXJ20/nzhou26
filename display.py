@@ -1,13 +1,15 @@
 # %%
 import pathlib
-from scipy.ndimage.interpolation import rotate
 import starfile
+import random
 import mrcfile
 import numpy as np
 from scipy.ndimage import gaussian_filter
 import matplotlib.pyplot as plt
 import tensorflow as tf
 import cv2
+import os
+from particle import particles
 import tensorflow_hub as hub
 import pandas as pd
 seg_model_dir = '/storage_data/zhou_Ningkun/workspace/data_particleSeg/models/segmentation/'
@@ -108,7 +110,41 @@ class check_seg_history():
         plt.plot(history.iloc[:,4], label = 'mean_IOU')
         plt.legend()
         plt.show()
+class check_augment():
+    def __init__(self, num_to_display) -> None:
+        data_paths = pathlib.Path(data_dir)
+        input_img_paths = list(data_paths.glob("*/raw/*"))
+        input_img_paths = sorted(input_img_paths, key=os.path.basename)
+        target_img_paths = list(data_paths.glob("*/label/*"))
+        target_img_paths = sorted(target_img_paths, key=os.path.basename)
+        random.Random(1337).shuffle(input_img_paths)
+        random.Random(1337).shuffle(target_img_paths)
+        input_img_paths = input_img_paths[:num_to_display]
+        target_img_paths = target_img_paths[:num_to_display]
+        aug_gen = particles(num_to_display, img_size, input_img_paths, target_img_paths,fold=1)
+        no_aug_gen = particles(num_to_display, img_size, input_img_paths, target_img_paths,fold=0)
+        self.width = round(np.sqrt(num_to_display))
+        no_aug_batch_image, no_aug_batch_target = no_aug_gen.__getitem__(0)
+        batch_image, batch_target = aug_gen.__getitem__(0)
+        lp_no_aug_batch_image = [gaussian_filter(img,sigma=5) for img in no_aug_batch_image]
 
+        self.display_batch(no_aug_batch_image)
+        self.display_batch(lp_no_aug_batch_image)
+        self.display_batch(no_aug_batch_target)
+        self.display_batch(batch_image)
+        self.display_batch(batch_target)
+    def display_batch(self,batch, titles=[]):
+        plt.figure(figsize=(5,5))
+        for i in range(1, self.width*self.width +1):
+            plt.subplot(self.width, self.width, i)
+            plt.imshow(batch[i-1], cmap='gray')
+            if titles:
+                plt.title(titles[i-1])
+            plt.axis('off')
+        plt.show()
+class display_test_particles():
+    def __init__(self) -> None:
+        pass
 class UpdatedMeanIoU(tf.keras.metrics.MeanIoU):
   def __init__(self,
                y_true=None,
@@ -124,10 +160,12 @@ class UpdatedMeanIoU(tf.keras.metrics.MeanIoU):
 
 star_file = '/storage_data/zhou_Ningkun/relionProject/particleSeg_ranking_rhs/Extract/job011/particles.star'
 raw_dir = '/storage_data/zhou_Ningkun/relionProject/particleSeg_ranking_rhs/Extract/job011/goodmrc_auto/'
+data_dir = '/storage_data/zhou_Ningkun/workspace/data_particleSeg/data_for_training/'
 
 if __name__ =='__main__':
     # display_test_particles
     #display_infer_particles(star_file, raw_dir, 16)
     #plot_models(seg_model_dir, '*290000*.csv')
-    check_seg_history('/storage_data/zhou_Ningkun/workspace/data_particleSeg/models/segmentation/66.32--290000--DenseNet169--2021-12-28.h5-history.csv')
+    #check_seg_history('/storage_data/zhou_Ningkun/workspace/data_particleSeg/models/segmentation/66.32--290000--DenseNet169--2021-12-28.h5-history.csv')
+    check_augment(9)
 # %%

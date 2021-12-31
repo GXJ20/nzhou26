@@ -11,7 +11,7 @@ import pandas as pd
 import tensorflow_hub as hub
 # %%
 # read data
-output_folder = '/tmp/particleSeg/'
+output_folder = '/ssd/particleSeg/'
 seg_model_dir = '/storage_data/zhou_Ningkun/workspace/data_particleSeg/models/segmentation/'
 rating_model_dir = '/storage_data/zhou_Ningkun/workspace/data_particleSeg/models/rating/'
 process_number = 16
@@ -73,7 +73,7 @@ class Inference_star():
         self.metadata = starfile.read(star_file)
         self.raw_data_dir = raw_data_dir
     def e2e_infer(self):
-        os.system(f'rm -rf {output_folder}')
+        #os.system(f'rm -rf {output_folder}')
         os.system(f'mkdir -p {output_folder}')
         self.npy_gen_mpi()
         self.seg_mpi()
@@ -97,7 +97,7 @@ class Inference_star():
             process.join()
     
     def seg_mpi(self):
-        model_paths =  list(pathlib.Path(seg_model_dir).glob('*.h5'))
+        model_paths =  list(pathlib.Path(seg_model_dir).glob('*DenseNet169*.h5'))
         model_paths = sorted(model_paths, key=lambda model: model.name.split('--')[0], reverse=True)    
         seg_model = model_paths[0]
         print(f'Using segmentation model: {seg_model.name}')
@@ -176,7 +176,7 @@ class Inference_star():
             print(f"Dropping bad particles, progress: {percent}")
         starfile.write(self.metadata, f'{os.path.dirname(self.star_file)}/{self.model_IOU}--{self.model_MAE}{os.path.basename(self.star_file)}')
         os.system(f'rm -rf {output_folder}')
-        print(f'Done and saved cleaned metadata in {os.path.dirname(self.star_file)}/{self.model_MAE}{os.path.basename(self.star_file)}')
+        print(f'Done and saved cleaned metadata in {os.path.dirname(self.star_file)}/{self.model_IOU}--{self.model_MAE}{os.path.basename(self.star_file)}')
 
 class UpdatedMeanIoU(tf.keras.metrics.MeanIoU):
   def __init__(self,
