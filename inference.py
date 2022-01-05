@@ -68,15 +68,25 @@ def batch_pred(processName, pred_result, input_img_paths, idx, end):
             print(f"Running particle segmentation, progress: {percent}")
         idx += 1
 class Inference_star():
-    def __init__ (self, star_file, raw_data_dir):
+    def __init__ (self, star_file, raw_data_dir, ratio, continues=False):
         self.star_file= star_file
         self.metadata = starfile.read(star_file)
         self.raw_data_dir = raw_data_dir
-    def e2e_infer(self):
-        #os.system(f'rm -rf {output_folder}')
+        self.ratio = ratio
+        if not continues:
+            os.system(f'rm -rf {output_folder}')
         os.system(f'mkdir -p {output_folder}')
         self.npy_gen_mpi()
-        self.seg_mpi()
+        total_img_paths = list(pathlib.Path(output_folder).glob("*.npy"))
+        num_of_batches = len(total_img_paths) // 10240 +1
+        for i in range(num_of_batches):
+            print(f'running pred batch {i} out of {num_of_batches} batches')
+            start = i* 10240
+            if i == num_of_batches -1 :
+                end = len(total_img_paths)
+            else:
+                end = start + 10240
+            self.seg_mpi(total_img_paths[start:end])
         self.rating()
         self.ranking()
     def npy_gen_mpi(self):
@@ -96,16 +106,15 @@ class Inference_star():
         for process in processes:
             process.join()
     
-    def seg_mpi(self):
+    def seg_mpi(self, input_img_paths):
         model_paths =  list(pathlib.Path(seg_model_dir).glob('*DenseNet169*.h5'))
         model_paths = sorted(model_paths, key=lambda model: model.name.split('--')[0], reverse=True)    
         seg_model = model_paths[0]
         print(f'Using segmentation model: {seg_model.name}')
         self.model_IOU = seg_model.name.split('--')[0]
+        tf.keras.backend.clear_session()
         model = tf.keras.models.load_model(seg_model, custom_objects={"UpdatedMeanIoU": UpdatedMeanIoU})
         model.compile(optimizer='rmsprop', loss="sparse_categorical_crossentropy", metrics=[UpdatedMeanIoU(num_classes=3)])
-        raw_npy_path = pathlib.Path(output_folder)
-        input_img_paths = list(raw_npy_path.glob("*.npy"))
         self.pred_path = f'{output_folder}/pred/'
         os.system(f'mkdir -p {self.pred_path}')
         num_of_particles = len(input_img_paths)
@@ -117,7 +126,7 @@ class Inference_star():
             if i == process_number -1 :
                 end_idx = num_of_particles
             pred_gen = inference_particles(batch_size=16, img_size= (256,256),input_img_paths=input_img_paths[start_idx:end_idx])
-            pred_result = model.predict(pred_gen, verbose=1, use_multiprocessing=False, workers=4)
+            pred_result = model.predict(pred_gen, verbose=0, use_multiprocessing=True, workers=4)
             processes.append( myProcess(processID=i,
                 name= f"Process-{i}",
                 start_idx= start_idx, 
@@ -164,7 +173,7 @@ class Inference_star():
         iou_rank = pd.read_csv(self.pred_csv)
         iou_rank = iou_rank.sort_values('iou')
         iou_rank = iou_rank.reset_index(drop=True)
-        num_to_drop = len(iou_rank) //3
+        num_to_drop = int(len(iou_rank)*self.ratio)
         for i in range(num_to_drop):
             name = str(iou_rank.iloc[i]['name'])
             number_part = name.split('@')[0]
