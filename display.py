@@ -12,9 +12,11 @@ import os
 from particle import particles
 import tensorflow_hub as hub
 import pandas as pd
+import inference
 seg_model_dir = '/storage_data/zhou_Ningkun/workspace/data_particleSeg/models/segmentation/'
 rating_model_dir = '/storage_data/zhou_Ningkun/workspace/data_particleSeg/models/rating/'
 img_size = (256,256)
+
 
 class plot_models():
     def __init__(self, model_dir, pattern):
@@ -33,98 +35,45 @@ class plot_models():
         plt.show()
         for i in range(0,len(names)):
             print(f'{names[i]}: {metrics[i]}')
-class display_infer_particles():
-    def __init__(self, star_file, raw_dir,num_to_display,quality=None, seg_model_key='*.h5'):
-        raw_imgs = []
-        lp_imgs = []
-        imgs = []
-        metadata = starfile.read(star_file)
-        self.seg_model_key = seg_model_key
-        if quality == 'good':
-            metadata = metadata[metadata['rlnGroupName'] != 'group_111']
-        elif quality == 'bad':
-            metadata = metadata[metadata['rlnGroupName'] == 'group_111']
-        for i in range(num_to_display):
-            #random.seed(i)
-            idx = random.randint(0, len(metadata))
-            raw_img = self.raw_from_star(idx, metadata, raw_dir)
-            raw_imgs.append(raw_img)
-            lp_imgs.append(gaussian_filter(raw_img, sigma=5))
-            img = cv2.resize(raw_img, dsize=img_size, interpolation=cv2.INTER_NEAREST)
-            img = np.stack((img,)*3, axis=-1)
-            imgs.append(img)
-        width = round(np.sqrt(num_to_display))
-        
-        display_batch(raw_imgs, width)
-        display_batch(lp_imgs, width)
-        pred_batch = np.asarray(imgs)
-        pred = self.segment(pred_batch)
-        display_batch(pred, width)
-        #ratings = self.rate(pred)
-        ratings = self.ets(pred)
-        
-        display_batch(pred,width, titles=ratings)
-        self.seg = pred[1]
 
-    def explain_ets(self):
-        plt.figure(figsize=(3,3))
-        plt.imshow(self.seg, cmap='gray')
-        unique, counts = np.unique(self.seg, return_counts=True)
-        my_dict = dict(zip(unique, counts))
-        ets = my_dict[2]/my_dict[0]
-        print(my_dict)
-        print(ets)
+def display_infer_particles(star_file, raw_dir, num_to_display ,quality, seg_model_key='*.h5'):
+    raw_imgs = []
+    lp_imgs = []
+    imgs = []
+    metadata = starfile.read(star_file)
+    model_paths =  list(pathlib.Path(seg_model_dir).glob(seg_model_key))
+    model_paths = sorted(model_paths, key=lambda model: model.name.split('--')[0], reverse=True)    
+    seg_model = model_paths[0]
+    if quality == 'good':
+        metadata = metadata[metadata['rlnGroupName'] != 'group_111']
+    elif quality == 'bad':
+        metadata = metadata[metadata['rlnGroupName'] == 'group_111']
+    for i in range(num_to_display):
+        #random.seed(i)
+        idx = random.randint(0, len(metadata))
+        raw_img,img_name = inference.raw_from_star(idx, metadata, raw_dir)
+        raw_imgs.append(raw_img)
+        lp_imgs.append(gaussian_filter(raw_img, sigma=5))
+        img = cv2.resize(raw_img, dsize=img_size, interpolation=cv2.INTER_NEAREST)
+        img = np.stack((img,)*3, axis=-1)
+        imgs.append(img)
+    width = round(np.sqrt(num_to_display))
+    display_batch(raw_imgs, width)
+    display_batch(lp_imgs, width)
+    pred_batch = np.asarray(imgs)
+    pred = inference.segment(pred_batch,seg_model_name=seg_model)
+    display_batch(pred, width)
+    ratings = inference.ets(pred)
+    display_batch(pred,width, titles=ratings)
 
-    def raw_from_star(self, idx, metadata, raw_dir):
-        raw_image_file_name= metadata.iloc[idx]['rlnImageName'].split('/')[-1]
-        particle_idx = metadata.iloc[idx]['rlnImageName'].split('@')[0]
-        raw_image_path = f"{raw_dir}{raw_image_file_name}"
-        with mrcfile.open(raw_image_path) as mrc:
-            raw_img = mrc.data[int(particle_idx)-1]
-        return raw_img
-
-    def segment(self,batch):
-        model_paths =  list(pathlib.Path(seg_model_dir).glob(self.seg_model_key))
-        model_paths = sorted(model_paths, key=lambda model: model.name.split('--')[0], reverse=True)    
-        seg_model = model_paths[0]
-        print(f'Using segmentation model: {seg_model.name}')
-        model = tf.keras.models.load_model(seg_model, custom_objects={"UpdatedMeanIoU": UpdatedMeanIoU})
-        model.compile(optimizer='rmsprop', loss="sparse_categorical_crossentropy", metrics=[UpdatedMeanIoU(num_classes=3)])
-        pred_result = model.predict(batch)
-        pred = np.argmax(pred_result,axis=-1)
-        return pred
-
-    def rate(self,batch):
-        model_paths =  list(pathlib.Path(rating_model_dir).glob('*.h5'))
-        model_paths = sorted(model_paths, key=lambda model: model.name.split('--')[0])    
-        rating_model_name = model_paths[0]
-        print(f'Using rating model: {rating_model_name.name}')
-        rating_model = tf.keras.models.load_model(rating_model_name, custom_objects={"KerasLayer": hub.KerasLayer})
-        rating_model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate= 0.001),
-                    loss='mean_absolute_error')
-        resize_batch = []
-        resize_size = rating_model.layers[0].input_shape[1:3]
-        for seg in batch:
-            seg = cv2.resize(seg, dsize=resize_size, interpolation=cv2.INTER_NEAREST)
-            seg = np.stack((seg,)*3, axis=-1)
-            resize_batch.append(seg)
-        resize_batch = np.asarray(resize_batch)
-        ratings = rating_model.predict(resize_batch).tolist()
-        ratings = ["{:.4f}".format(num[0])  for num in ratings]
-        return ratings
-        
-    def ets(self, batch):
-        ets_ratios = []
-        for seg in batch:
-            unique, counts = np.unique(seg, return_counts=True)
-            my_dict = dict(zip(unique, counts))
-            try:
-                ets = my_dict[2]/my_dict[0]
-            except KeyError:
-                ets = 0
-            ets_ratios.append(ets)
-        ets_ratios = ["{:.4f}".format(num)  for num in ets_ratios]
-        return ets_ratios
+def explain_ets(seg):
+    plt.figure(figsize=(3,3))
+    plt.imshow(seg, cmap='gray')
+    unique, counts = np.unique(seg, return_counts=True)
+    my_dict = dict(zip(unique, counts))
+    ets = my_dict[2]/my_dict[0]
+    print(my_dict)
+    print(ets)
 class check_seg_history():
     def __init__(self, csv_file):
         history = pd.read_csv(csv_file)
@@ -157,7 +106,6 @@ class check_augment():
         display_batch(no_aug_batch_target)
         display_batch(batch_image)
         display_batch(batch_target)
-    
 class display_test_particles():
     def __init__(self, seg_model_key='*.h5', dataset='*', num_to_display=9) -> None:
         raw_img_paths = list(pathlib.Path(data_dir).glob(f'{dataset}/raw/*.npy'))
@@ -295,10 +243,10 @@ if __name__ =='__main__':
     #analysis.dispay_good_bad_distribution('good')
     #analysis.ets_vs_defocus()
     
-    coord_plot = Plot_Picking(star_file=star_file, mrc_dir=mrc_dir)
-    coord_plot.pie_chart()
-    coord_plot.pick_on_mrc(20)
-    #display = display_infer_particles(star_file, raw_dir, 9, quality='good', seg_model_key='67.58*.h5')
+    # coord_plot = Plot_Picking(star_file=star_file, mrc_dir=mrc_dir)
+    # coord_plot.pie_chart()
+    # coord_plot.pick_on_mrc(20)
+    display_infer_particles(star_file, raw_dir, 4, quality='all', seg_model_key='67.58*.h5')
     #display.explain_ets()
     #plot_models(seg_model_dir, '*290000*.csv')
     #check_seg_history('/storage_data/zhou_Ningkun/workspace/data_particleSeg/models/segmentation/66.32--290000--DenseNet169--2021-12-28.h5-history.csv')
