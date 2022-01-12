@@ -12,7 +12,7 @@ from tensorflow.keras import layers
 
 mirroted_strategy = tf.distribute.MirroredStrategy()
 
-data_dir = '/storage_data/zhou_Ningkun/workspace/data_particleSeg/data_for_training/'
+data_dir = '/ssd/data_for_training/'
 output_dir = '/storage_data/zhou_Ningkun/workspace/data_particleSeg/models/segmentation/'
 img_size = (256, 256)
 num_classes = 3
@@ -75,9 +75,9 @@ class Train():
 
   def data_gen(self, num_to_use):
     data_paths = pathlib.Path(data_dir)
-    input_img_paths = list(data_paths.glob("*/raw/*"))
+    input_img_paths = list(data_paths.glob("*/raw/*.npy"))
     input_img_paths = sorted(input_img_paths, key=os.path.basename)
-    target_img_paths = list(data_paths.glob("*/label/*"))
+    target_img_paths = list(data_paths.glob("*/label/*.npy"))
     target_img_paths = sorted(target_img_paths, key=os.path.basename)
     random.Random(1337).shuffle(input_img_paths)
     random.Random(1337).shuffle(target_img_paths)
