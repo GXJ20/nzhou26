@@ -106,6 +106,7 @@ class check_augment():
         display_batch(batch_target)
 class display_test_particles():
     def __init__(self, seg_model_key='*.h5', dataset='*', num_to_display=9) -> None:
+        
         raw_img_paths = list(pathlib.Path(data_dir).glob(f'{dataset}/raw/*.npy'))
         label_img_paths = list(pathlib.Path(data_dir).glob(f'{dataset}/label/*.npy'))
         raw_img_paths = sorted(raw_img_paths, key=os.path.basename)
@@ -227,6 +228,7 @@ def display_batch(batch, width,titles=[]):
         plt.axis('off')
     plt.tight_layout()
     plt.show()
+
 star_file = '/storage_data/zhou_Ningkun/relionProject/particleSeg_ranking_rhs/Extract/job029/particles.star'
 raw_dir = '/storage_data/zhou_Ningkun/relionProject/particleSeg_ranking_rhs/Extract/job029/goodmrc_auto/'
 data_dir = '/storage_data/zhou_Ningkun/workspace/data_particleSeg/data_for_training/'

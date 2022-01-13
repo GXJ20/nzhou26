@@ -21,7 +21,9 @@ class Inference_star():
         model_paths =  list(pathlib.Path(seg_model_dir).glob(seg_model_key))
         model_paths = sorted(model_paths, key=lambda model: model.name.split('--')[0], reverse=True)    
         self.seg_model = model_paths[0]
+        
         self.model_IOU = self.seg_model.name.split('--')[0]
+        #self.seg_model = 'models/67.58--290000--particle_segmentation-2021-12-15.h5'
     def infer_batch(self, batch_number):
         start = batch_number * self.batch_size
         end = start + self.batch_size
