@@ -21,13 +21,21 @@ pip install -q git+https://github.com/tensorflow/examples.git
 ```
 ## Usage
 ```
-usage: segParticles.py [-h] [--train TRAIN] [--infer INFER] [--raw_data RAW_DATA]
+usage: segParticles.py [-h] [-t TRAIN] [-i INFER] [-r RAW_DATA] [-d DROP_RATIO] [-c]
+
 ParticleSeg: Segment your particles
+
 optional arguments:
-  -h, --help           show this help message and exit
-  --train TRAIN        Train models with current dataset.
-  --infer INFER        Take a metadata(starfile) and return cleaned metadata.
-  --raw_data RAW_DATA  Take raw data directory(where *.mrcs stored) if metadata for inference is provided.
+  -h, --help            show this help message and exit
+  -t TRAIN, --train TRAIN
+                        Train models with current dataset.
+  -i INFER, --infer INFER
+                        Take a metadata(starfile) and return cleaned metadata.
+  -r RAW_DATA, --raw_data RAW_DATA
+                        Take raw data directory(where *.mrcs stored) if metadata for inference is provided.
+  -d DROP_RATIO, --drop_ratio DROP_RATIO
+                        Ratio of the particles to be dropped
+  -c, --continue        continue inference from current tmp files
 ```
 Train all pretrained models provided 25600 particles to test performance of each model
 ```
