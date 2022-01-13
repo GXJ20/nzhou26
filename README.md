@@ -23,15 +23,13 @@ pip install -q git+https://github.com/tensorflow/examples.git
 ```
 ## Usage
 ```
-usage: segParticles.py [-h] [-t TRAIN] [-i INFER] [-r RAW_DATA] [-d DROP_RATIO] [-c]
+usage: segParticles.py [-h] [-i INPUT_STAR] [-r RAW_DATA] [-d DROP_RATIO] [-c]
 
 ParticleSeg: Segment your particles
 
 optional arguments:
   -h, --help            show this help message and exit
-  -t TRAIN, --train TRAIN
-                        Train models with current dataset.
-  -i INFER, --infer INFER
+  -i INPUT_STAR, --input_star INPUT_STAR
                         Take a metadata(starfile) and return cleaned metadata.
   -r RAW_DATA, --raw_data RAW_DATA
                         Take raw data directory(where *.mrcs stored) if metadata for inference is provided.
@@ -39,19 +37,12 @@ optional arguments:
                         Ratio of the particles to be dropped
   -c, --continue        continue inference from current tmp files
 ```
-Train all pretrained models provided 25600 particles to test performance of each model
-```
-python segParticles.py --train all
-```
-Train a specified model with all particles
-```
-python segParticles.py --train DenseNet169
-```
 Inference your particles
 ```
 python segParticles.py --infer /path/to/your/particles.star --raw_data /path/to/your/raw/
 ```
-## Pretrained custom models
+## Train
+There are some base pre-trained models from tensorflow application that can be directly used as down stack for the U-Net model.
 ```
 base_models = [
   'custom',
@@ -62,5 +53,14 @@ base_models = [
   'ResNet101'
 ]
 ```
+To train all or a specific model:
+```
+# train model available pre-trained models, including custom
+python train.py all
+# train a specific model
+python train.py DenseNet121
+```
 ## Getting Help
-Please contact nzhou26@outlook.com 
+Training data available upon request.
+
+For any questions, please contact nzhou26@outlook.com 

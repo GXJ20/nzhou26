@@ -4,6 +4,7 @@ import random
 import tensorflow as tf
 tf.get_logger().setLevel('ERROR')
 import pathlib
+import sys
 from datetime import date
 from particle import *
 from tensorflow_examples.models.pix2pix import pix2pix
@@ -81,8 +82,9 @@ class Train():
     target_img_paths = sorted(target_img_paths, key=os.path.basename)
     random.Random(1337).shuffle(input_img_paths)
     random.Random(1337).shuffle(target_img_paths)
-    input_img_paths = input_img_paths[:num_to_use]
-    target_img_paths = target_img_paths[:num_to_use]
+    if num_to_use != -1:
+      input_img_paths = input_img_paths[:num_to_use]
+      target_img_paths = target_img_paths[:num_to_use]
     # Split our img paths into a training and a validation set
     test_samples = int(len(input_img_paths)//5)
     val_samples = int(len(input_img_paths)//5*4//5)
@@ -222,3 +224,20 @@ class Train():
         padding='same')  #64x64 -> 128x128
     x = last(x)
     return tf.keras.Model(inputs=inputs, outputs=x)
+
+base_models = [
+  'custom',
+  'DenseNet121',
+  'DenseNet169',
+  'DenseNet201',
+  'EfficientNetB0',
+  'ResNet101'
+]
+if __name__ =='__main__':
+  if sys.argv[1] == 'all':
+    for model in base_models:
+      new_train = Train(model, 20000)
+      new_train.train()
+  else:
+    new_train = Train(sys.argv[1], -1)
+    new_train.train()

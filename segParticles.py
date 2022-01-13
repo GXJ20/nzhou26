@@ -13,14 +13,7 @@ parser.add_argument('-r','--raw_data', help='Take raw data directory(where *.mrc
 parser.add_argument('-d','--drop_ratio',  default=0.3, help='Ratio of the particles to be dropped')
 parser.add_argument('-c','--continue', dest='continues', action='store_true',help='continue inference from current tmp files')
 args = parser.parse_args()
-base_models = [
-  #'custom',
-  'DenseNet121',
-  'DenseNet169',
-  'DenseNet201',
-  'EfficientNetB0',
-  'ResNet101'
-]
+
 output_folder = '/ssd/particleSeg/'
 import inference 
     
