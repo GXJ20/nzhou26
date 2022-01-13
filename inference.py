@@ -21,9 +21,9 @@ class Inference_star():
         model_paths =  list(pathlib.Path(seg_model_dir).glob(seg_model_key))
         model_paths = sorted(model_paths, key=lambda model: model.name.split('--')[0], reverse=True)    
         self.seg_model = model_paths[0]
-        
         self.model_IOU = self.seg_model.name.split('--')[0]
         #self.seg_model = 'models/67.58--290000--particle_segmentation-2021-12-15.h5'
+
     def infer_batch(self, batch_number):
         start = batch_number * self.batch_size
         end = start + self.batch_size
@@ -68,9 +68,12 @@ def raw_from_star(idx, metadata, raw_dir):
     return raw_img, metadata.iloc[idx]['rlnImageName']
 
 def segment(batch, seg_model_name):
-    model = tf.keras.models.load_model(seg_model_name, custom_objects={"UpdatedMeanIoU": UpdatedMeanIoU})
-    model.compile(optimizer='rmsprop', loss="sparse_categorical_crossentropy", metrics=[UpdatedMeanIoU(num_classes=3)])
-    pred_result = model.predict(batch)
+    mirrored_strategy = tf.distribute.MirroredStrategy()
+    with mirrored_strategy.scope():
+        model = tf.keras.models.load_model(seg_model_name, custom_objects={"UpdatedMeanIoU": UpdatedMeanIoU})
+        model.compile(optimizer='rmsprop', loss="sparse_categorical_crossentropy", metrics=[UpdatedMeanIoU(num_classes=3)])
+    pred_result = model.predict(batch, use_multiprocessing=True, workers=4)
+    
     pred = np.argmax(pred_result,axis=-1)
     return pred
     

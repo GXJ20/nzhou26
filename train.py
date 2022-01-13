@@ -10,7 +10,7 @@ from tensorflow_examples.models.pix2pix import pix2pix
 import pandas as pd
 from tensorflow.keras import layers
 
-mirroted_strategy = tf.distribute.MirroredStrategy()
+mirrored_strategy = tf.distribute.MirroredStrategy()
 
 data_dir = '/ssd/data_for_training/'
 output_dir = '/storage_data/zhou_Ningkun/workspace/data_particleSeg/models/segmentation/'
@@ -39,7 +39,7 @@ class Train():
     self.num_to_use = num_to_use
   def train(self):
     train_gen, val_gen, test_gen = self.data_gen(self.num_to_use)
-    with mirroted_strategy.scope():
+    with mirrored_strategy.scope():
       model = self.create_model(model_name=self.model_name)
     tmp_model_name = f"{self.model_name}--{date.today()}.h5"
     callbacks = [
