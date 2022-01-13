@@ -7,7 +7,6 @@ import argparse
 import starfile
 import pandas as pd
 parser = argparse.ArgumentParser(description='ParticleSeg: Segment your particles')
-#parser.add_argument('-t','--train',  dest='train',help='Train models with current dataset.')
 parser.add_argument('-i','--input_star',  help='Take a metadata(starfile) and return cleaned metadata.')
 parser.add_argument('-r','--raw_data', help='Take raw data directory(where *.mrcs stored) if metadata for inference is provided.')
 parser.add_argument('-d','--drop_ratio',  default=0.3, help='Ratio of the particles to be dropped')

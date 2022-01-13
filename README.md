@@ -21,7 +21,7 @@ pip install -r requirement.txt
 # install tensorflow_example from github
 pip install -q git+https://github.com/tensorflow/examples.git
 ```
-## Usage
+## Inference Usage
 ```
 usage: segParticles.py [-h] [-i INPUT_STAR] [-r RAW_DATA] [-d DROP_RATIO] [-c]
 
