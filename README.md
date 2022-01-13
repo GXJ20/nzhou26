@@ -1,5 +1,9 @@
 # particleSeg
 `particleSeg` is a deep learning-based segmentation tool for cryo-EM particles.
+
+# Segmentation in cryo-EM
+`particleSeg` can quickly and accurately segment a cryo-EM particle into three parts: signal of particle, background, and edge between them.
+
 ![work_flow](images/workflow.png)
 
 ## Installation
