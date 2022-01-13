@@ -10,11 +10,9 @@ import tensorflow as tf
 import cv2
 import os
 from particle import particles
-import tensorflow_hub as hub
 import pandas as pd
 import inference
 seg_model_dir = '/storage_data/zhou_Ningkun/workspace/data_particleSeg/models/segmentation/'
-rating_model_dir = '/storage_data/zhou_Ningkun/workspace/data_particleSeg/models/rating/'
 img_size = (256,256)
 
 
