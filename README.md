@@ -1,7 +1,10 @@
 # particleSeg
-`particleSeg` is a deep learning-based segmentation tool for cryo-EM particles. It can quickly and accurately segment a cryo-EM particle into three parts: signal, background, and edge. With the help of the huge cryo-EM database, [EMPIAR](https://www.ebi.ac.uk/empiar/), I gathered a largest quantity of raw particles image as input, and projections from their highest resolution reconstruction as label, trained them accordingly and came up with these [models](models/)
+`particleSeg` is a deep learning-based segmentation tool for cryo-EM particles. It quickly and accurately segments a cryo-EM particle into three parts: signal, background, and edge. 
+![seg_overview](images/seg_overview.png)
+With the help of the huge cryo-EM database, [EMPIAR](https://www.ebi.ac.uk/empiar/), I gathered a largest quantity of raw particles image as input, and projections from their highest resolution reconstruction as label, trained them accordingly and came up with these [models](models/)
 
 # Workflow
+This proposed workflow below can get rid of particles with bad segmentations. Users can choose their desired drop ratio to clean their datasets.
 ![work_flow](images/workflow.png)
 
 ## Installation
@@ -37,10 +40,11 @@ optional arguments:
                         Ratio of the particles to be dropped
   -c, --continue        continue inference from current tmp files
 ```
-Inference your particles
+Segment your particles and drop 30% of them that have the lowest ETS score.
 ```
-python segParticles.py --infer /path/to/your/particles.star --raw_data /path/to/your/raw/
+python segParticles.py -i /path/to/your/particles.star -r /path/to/your/raw/ -d 0.3
 ```
+After this inference, a new star file will be generated in the same folder as your input star file.
 ## Train
 There are some base pre-trained models from tensorflow application that can be directly used as down stack for the U-Net model.
 ```

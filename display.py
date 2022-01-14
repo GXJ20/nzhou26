@@ -115,7 +115,7 @@ def display_test_particles(dataset='*', seg_model_key='*.h5',num_to_display=9):
     label_imgs = []
     lp_imgs = []
     for i in range(num_to_display):
-        random.seed(i)
+        #random.seed(i)
         idx = random.randint(0, len(raw_img_paths))
         img = np.load(raw_img_paths[idx])
         label_imgs.append(np.load(label_img_paths[idx]))
@@ -251,7 +251,7 @@ pred_csv='/storage_data/zhou_Ningkun/relionProject/particleSeg_ranking_rhs/Extra
 mrc_dir = '/storage_data/zhou_Ningkun/relionProject/particleSeg_ranking_rhs/CtfFind/job007/goodmrc_auto'
 
 if __name__ =='__main__':
-    display_test_particles(seg_model_key='66.70*.h5', num_to_display=16)
+    display_test_particles(seg_model_key='*.h5', num_to_display=16)
 
     #analysis = Analysis_ETS(star_file=star_file, pred_csv=pred_csv)
     #analysis.dispay_good_bad_distribution('bad')
