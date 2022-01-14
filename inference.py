@@ -72,7 +72,7 @@ def segment(batch, seg_model_name):
     with mirrored_strategy.scope():
         model = tf.keras.models.load_model(seg_model_name, custom_objects={"UpdatedMeanIoU": UpdatedMeanIoU})
         model.compile(optimizer='rmsprop', loss="sparse_categorical_crossentropy", metrics=[UpdatedMeanIoU(num_classes=3)])
-    pred_result = model.predict(batch, use_multiprocessing=True, workers=4)
+    pred_result = model.predict(batch, use_multiprocessing=True, workers=2)
     
     pred = np.argmax(pred_result,axis=-1)
     return pred

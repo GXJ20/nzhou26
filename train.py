@@ -17,7 +17,7 @@ data_dir = '/ssd/data_for_training/'
 output_dir = '/storage_data/zhou_Ningkun/workspace/data_particleSeg/models/segmentation/'
 img_size = (256, 256)
 num_classes = 3
-batch_size = 16
+
 
 class UpdatedMeanIoU(tf.keras.metrics.MeanIoU):
   def __init__(self,
@@ -35,9 +35,11 @@ class UpdatedMeanIoU(tf.keras.metrics.MeanIoU):
 # %%
 
 class Train():
-  def __init__(self, model_name, num_to_use):
+  def __init__(self, model_name, num_to_use, fold=0, batch_size=16):
     self.model_name = model_name
     self.num_to_use = num_to_use
+    self.fold = fold
+    self.batch_size = batch_size
   def train(self):
     train_gen, val_gen, test_gen = self.data_gen(self.num_to_use)
     with mirrored_strategy.scope():
@@ -61,7 +63,7 @@ class Train():
     
     loss, iou = model.evaluate(test_gen)
     iou = "{0:.2%}".format(iou)[:-1]
-    permanet_model_name = f"{iou}--{self.num_to_use}--{tmp_model_name}"
+    permanet_model_name = f"{iou}--{self.num_used}--{tmp_model_name}"
     hist_csv_file = f'{output_dir}{permanet_model_name}-history.csv'
     os.system(f"mv {output_dir}{tmp_model_name} \
           {output_dir}{permanet_model_name}")
@@ -82,9 +84,11 @@ class Train():
     target_img_paths = sorted(target_img_paths, key=os.path.basename)
     random.Random(1337).shuffle(input_img_paths)
     random.Random(1337).shuffle(target_img_paths)
+    
     if num_to_use != -1:
       input_img_paths = input_img_paths[:num_to_use]
       target_img_paths = target_img_paths[:num_to_use]
+    self.num_used = len(input_img_paths)
     # Split our img paths into a training and a validation set
     test_samples = int(len(input_img_paths)//5)
     val_samples = int(len(input_img_paths)//5*4//5)
@@ -100,9 +104,9 @@ class Train():
     print(len(train_input_img_paths))
     print(len(val_input_img_paths))
     print(len(test_input_img_paths))
-    train_gen = particles(batch_size, img_size, train_input_img_paths, train_target_img_paths,fold=1)
-    val_gen = particles(batch_size, img_size, val_input_img_paths, val_target_img_paths,fold=1)
-    test_gen = particles(batch_size, img_size, test_input_img_paths, test_target_img_paths, fold=1)
+    train_gen = particles(self.batch_size, img_size, train_input_img_paths, train_target_img_paths,fold=self.fold)
+    val_gen = particles(self.batch_size, img_size, val_input_img_paths, val_target_img_paths,fold=self.fold)
+    test_gen = particles(self.batch_size, img_size, test_input_img_paths, test_target_img_paths, fold=self.fold)
     return train_gen, val_gen, test_gen
 
 
@@ -236,8 +240,8 @@ base_models = [
 if __name__ =='__main__':
   if sys.argv[1] == 'all':
     for model in base_models:
-      new_train = Train(model, 20000)
+      new_train = Train(model, 20000, batch_size=64)
       new_train.train()
   else:
-    new_train = Train(sys.argv[1], -1)
+    new_train = Train(sys.argv[1], -1, batch_size=64)
     new_train.train()

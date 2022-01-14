@@ -59,6 +59,7 @@ def display_infer_particles(star_file, raw_dir, num_to_display ,quality, seg_mod
     display_batch(raw_imgs, width)
     display_batch(lp_imgs, width)
     pred_batch = np.asarray(imgs)
+    print(pred_batch.shape)
     pred = inference.segment(pred_batch,seg_model_name=seg_model)
     display_batch(pred, width)
     ratings = inference.ets(pred)
@@ -104,25 +105,39 @@ class check_augment():
         display_batch(no_aug_batch_target)
         display_batch(batch_image)
         display_batch(batch_target)
-class display_test_particles():
-    def __init__(self, seg_model_key='*.h5', dataset='*', num_to_display=9) -> None:
-        
-        raw_img_paths = list(pathlib.Path(data_dir).glob(f'{dataset}/raw/*.npy'))
-        label_img_paths = list(pathlib.Path(data_dir).glob(f'{dataset}/label/*.npy'))
-        raw_img_paths = sorted(raw_img_paths, key=os.path.basename)
-        label_img_paths = sorted(label_img_paths, key=os.path.basename)
-        raw_imgs = []
-        label_imgs = []
-        for i in range(num_to_display):
-            random.seed(i)
-            idx = random.randint(0, len(raw_img_paths))
-            raw_imgs.append(np.load(raw_img_paths[idx]))
-            label_imgs.append(np.load(label_img_paths[idx]))
-            lp_imgs = [gaussian_filter(img, sigma=5) for img in raw_imgs]
-        width = round(np.sqrt(num_to_display))
-        display_batch(raw_imgs,width)
-        display_batch(lp_imgs,width)
-        display_batch(label_imgs,width)
+def display_test_particles(dataset='*', seg_model_key='*.h5',num_to_display=9):
+    raw_img_paths = list(pathlib.Path(data_dir).glob(f'{dataset}/raw/*.npy'))
+    label_img_paths = list(pathlib.Path(data_dir).glob(f'{dataset}/label/*.npy'))
+    raw_img_paths = sorted(raw_img_paths, key=os.path.basename)
+    label_img_paths = sorted(label_img_paths, key=os.path.basename)
+    raw_imgs = []
+    imgs = []
+    label_imgs = []
+    lp_imgs = []
+    for i in range(num_to_display):
+        random.seed(i)
+        idx = random.randint(0, len(raw_img_paths))
+        img = np.load(raw_img_paths[idx])
+        label_imgs.append(np.load(label_img_paths[idx]))
+        raw_imgs.append(img)
+        lp_imgs.append(gaussian_filter(img, sigma=5))
+        img = cv2.resize(img, dsize=img_size, interpolation=cv2.INTER_NEAREST)
+        img = np.stack((img,)*3, axis=-1)
+        imgs.append(img)
+    width = round(np.sqrt(num_to_display))
+    display_batch(raw_imgs,width)
+    display_batch(lp_imgs,width)
+    display_batch(label_imgs,width)
+    model_paths =  list(pathlib.Path(seg_model_dir).glob(seg_model_key))
+    model_paths = sorted(model_paths, key=lambda model: model.name.split('--')[0], reverse=True)    
+    seg_model = model_paths[0]
+    pred_batch = np.asarray(imgs)
+    print(f'Using model: {seg_model}')
+    pred = inference.segment(pred_batch,seg_model_name=seg_model)
+    display_batch(pred, width)
+    ratings = inference.ets(pred)
+    display_batch(pred,width, titles=ratings)
+
 class Plot_Picking():
     def __init__(self, star_file, mrc_dir) -> None:
         self.metadata = starfile.read(star_file)
@@ -236,7 +251,7 @@ pred_csv='/storage_data/zhou_Ningkun/relionProject/particleSeg_ranking_rhs/Extra
 mrc_dir = '/storage_data/zhou_Ningkun/relionProject/particleSeg_ranking_rhs/CtfFind/job007/goodmrc_auto'
 
 if __name__ =='__main__':
-    # display_test_particles
+    display_test_particles(seg_model_key='66.70*.h5', num_to_display=16)
 
     #analysis = Analysis_ETS(star_file=star_file, pred_csv=pred_csv)
     #analysis.dispay_good_bad_distribution('bad')
@@ -246,7 +261,7 @@ if __name__ =='__main__':
     # coord_plot = Plot_Picking(star_file=star_file, mrc_dir=mrc_dir)
     # coord_plot.pie_chart()
     # coord_plot.pick_on_mrc(20)
-    display_infer_particles(star_file, raw_dir, 4, quality='all', seg_model_key='67.58*.h5')
+    #display_infer_particles(star_file, raw_dir, 9, quality='all', seg_model_key='67.58*.h5')
     #display.explain_ets()
     #plot_models(seg_model_dir, '*290000*.csv')
     #check_seg_history('/storage_data/zhou_Ningkun/workspace/data_particleSeg/models/segmentation/66.32--290000--DenseNet169--2021-12-28.h5-history.csv')
