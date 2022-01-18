@@ -240,7 +240,7 @@ base_models = [
 if __name__ =='__main__':
   if sys.argv[1] == 'all':
     for model in base_models:
-      new_train = Train(model, 20000, batch_size=64)
+      new_train = Train(model, -1, batch_size=32)
       new_train.train()
   else:
     new_train = Train(sys.argv[1], -1, batch_size=64)

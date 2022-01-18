@@ -42,6 +42,7 @@ def display_infer_particles(star_file, raw_dir, num_to_display ,quality, seg_mod
     model_paths =  list(pathlib.Path(seg_model_dir).glob(seg_model_key))
     model_paths = sorted(model_paths, key=lambda model: model.name.split('--')[0], reverse=True)    
     seg_model = model_paths[0]
+    print()
     if quality == 'good':
         metadata = metadata[metadata['rlnGroupName'] != 'group_111']
     elif quality == 'bad':
@@ -59,7 +60,6 @@ def display_infer_particles(star_file, raw_dir, num_to_display ,quality, seg_mod
     display_batch(raw_imgs, width)
     display_batch(lp_imgs, width)
     pred_batch = np.asarray(imgs)
-    print(pred_batch.shape)
     pred = inference.segment(pred_batch,seg_model_name=seg_model)
     display_batch(pred, width)
     ratings = inference.ets(pred)
@@ -115,7 +115,7 @@ def display_test_particles(dataset='*', seg_model_key='*.h5',num_to_display=9):
     label_imgs = []
     lp_imgs = []
     for i in range(num_to_display):
-        #random.seed(i)
+        random.seed(i)
         idx = random.randint(0, len(raw_img_paths))
         img = np.load(raw_img_paths[idx])
         label_imgs.append(np.load(label_img_paths[idx]))
@@ -251,7 +251,7 @@ pred_csv='/storage_data/zhou_Ningkun/relionProject/particleSeg_ranking_rhs/Extra
 mrc_dir = '/storage_data/zhou_Ningkun/relionProject/particleSeg_ranking_rhs/CtfFind/job007/goodmrc_auto'
 
 if __name__ =='__main__':
-    display_test_particles(seg_model_key='*.h5', num_to_display=16)
+    #display_test_particles(seg_model_key='*.h5', num_to_display=16)
 
     #analysis = Analysis_ETS(star_file=star_file, pred_csv=pred_csv)
     #analysis.dispay_good_bad_distribution('bad')
@@ -261,7 +261,7 @@ if __name__ =='__main__':
     # coord_plot = Plot_Picking(star_file=star_file, mrc_dir=mrc_dir)
     # coord_plot.pie_chart()
     # coord_plot.pick_on_mrc(20)
-    #display_infer_particles(star_file, raw_dir, 9, quality='all', seg_model_key='67.58*.h5')
+    display_infer_particles(star_file, raw_dir, 16, quality='bad', seg_model_key='*.h5')
     #display.explain_ets()
     #plot_models(seg_model_dir, '*290000*.csv')
     #check_seg_history('/storage_data/zhou_Ningkun/workspace/data_particleSeg/models/segmentation/66.32--290000--DenseNet169--2021-12-28.h5-history.csv')
