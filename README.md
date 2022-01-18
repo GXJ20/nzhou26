@@ -3,17 +3,21 @@
 ![seg_overview](images/seg_overview.png)
 With the help of the huge cryo-EM database, [EMPIAR](https://www.ebi.ac.uk/empiar/), I gathered a largest quantity of raw particles image as input, and projections from their highest resolution reconstruction as label, trained them accordingly and came up with these [models](models/)
 
-# Workflow
+## Workflow
 This proposed workflow below can get rid of particles with bad segmentations. Users can choose their desired drop ratio to clean their datasets.
 ![work_flow](images/workflow.png)
 
 ## Installation
 1. Make sure you have [conda](https://docs.conda.io/en/latest/miniconda.html), [CUDA](https://developer.nvidia.com/cuda-toolkit)(version >= 11.0), and [cuDNN](https://developer.nvidia.com/cudnn) installed
-2. Create conda environment
+2. Clone this repo:
+```
+git clone https://github.com/nzhou26/particleSeg
+```
+3. Create conda environment
 ```
 conda env create -f env_particleSeg.yml
 ```
-3. Install dependencies from pip
+4. Install dependencies from pip
 ```
 # activate the environment just installed
 conda activate particleSeg
