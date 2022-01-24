@@ -3,3 +3,4 @@ __pycache__/
 outdated/
 .gitignore
 utils/.ipynb_checkpoints/
+display.py
