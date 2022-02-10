@@ -60,9 +60,12 @@ class Inference_star():
         starfile.write(metadata_dropped, new_star, overwrite=True)
         print(f'Done and saved cleaned metadata in {new_star}')
 def raw_from_star(idx, metadata, raw_dir):
-    raw_image_file_name= metadata.iloc[idx]['rlnImageName'].split('/')[-1]
     particle_idx = metadata.iloc[idx]['rlnImageName'].split('@')[0]
+    raw_img_relative = metadata.iloc[idx]['rlnImageName'].split('@')[1]
+    raw_image_file_name= raw_img_relative.split('/')[-1]
+    
     raw_image_path = f"{raw_dir}{raw_image_file_name}"
+    
     with mrcfile.open(raw_image_path) as mrc:
         raw_img = mrc.data[int(particle_idx)-1]
     return raw_img, metadata.iloc[idx]['rlnImageName']

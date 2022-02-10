@@ -1,15 +1,15 @@
 [
     {
-        "dataset_name" : "empty_particles",
-        "map_path": "none",
-        "mask_path" : "none",
-        "meta_data_path" : "/storage_data/zhou_Ningkun/relionProject/20211125_rhs/particleSeg_test/Extract/job004/particles.star",
-        "raw_data_dir" : "/storage_data/zhou_Ningkun/relionProject/20211125_rhs/particleSeg_test/Extract/job004/goodmrc/",
+        "dataset_name" : "empiar_10482",
+        "map_path": "/storage_data/zhou_Ningkun/relionProject/particleSeg_recon/empiar_10482/Refine3D/job002/run_class001.mrc",
+        "mask_path" : "/storage_data/zhou_Ningkun/relionProject/particleSeg_recon/empiar_10482/MaskCreate/job003/mask.mrc",
+        "meta_data_path" : "/storage_data/zhou_Ningkun/relionProject/particleSeg_recon/empiar_10482/Refine3D/job002/run_data.star",
+        "raw_data_dir" : "/storage_data/zhou_Ningkun/relionProject/particleSeg_recon/empiar_10482/Extract/job204/mics/",
         "threshold" : 10,
-        "number_of_particles_to_process" : 70000
+        "number_of_particles_to_process" : 40000
     },
     {
-        "dataset_name" : "/storage_data/zhou_Ningkun/relionProject/20s_10025",
+        "dataset_name" : "20s_10025",
         "map_path": "/storage_data/zhou_Ningkun/relionProject/20s_10025/Refine3D/job026/run_class001.mrc",
         "mask_path" : "/storage_data/zhou_Ningkun/relionProject/20s_10025/MaskCreate/job029/mask.mrc",
         "meta_data_path" : "/storage_data/zhou_Ningkun/relionProject/20s_10025/Refine3D/job026/run_data.star",
