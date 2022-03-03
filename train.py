@@ -44,6 +44,8 @@ class Train():
     train_gen, val_gen, test_gen = self.data_gen(self.num_to_use)
     with mirrored_strategy.scope():
       model = self.create_model(model_name=self.model_name)
+    # tf.keras.utils.plot_model(model, to_file='model.png', show_shapes=True)
+    # print('model plot saved!')
     tmp_model_name = f"{self.model_name}--{date.today()}.h5"
     callbacks = [
         tf.keras.callbacks.ModelCheckpoint(f"{output_dir}{tmp_model_name}", save_best_only=True),
