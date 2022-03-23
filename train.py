@@ -7,49 +7,43 @@ import pathlib
 import sys
 from datetime import date
 from particle import *
-from tensorflow_examples.models.pix2pix import pix2pix
 import pandas as pd
-from tensorflow.keras import layers
-
+from helper import UpdatedMeanIoU
+import models
+import datetime
+tf.random.set_seed(42)
 mirrored_strategy = tf.distribute.MirroredStrategy()
 
 data_dir = '/ssd/data_for_training/'
-output_dir = '/storage_data/zhou_Ningkun/workspace/data_particleSeg/models/segmentation/'
+output_dir = '/storage_data/zhou_Ningkun/workspace/data_particleSeg/models/segmentation/new/'
 img_size = (256, 256)
 num_classes = 3
 
 
-class UpdatedMeanIoU(tf.keras.metrics.MeanIoU):
-  def __init__(self,
-               y_true=None,
-               y_pred=None,
-               num_classes=None,
-               name=None,
-               dtype=None):
-    super(UpdatedMeanIoU, self).__init__(num_classes = num_classes,name=name, dtype=dtype)
-
-  def update_state(self, y_true, y_pred, sample_weight=None):
-    y_pred = tf.math.argmax(y_pred, axis=-1)
-    return super().update_state(y_true, y_pred, sample_weight)
 
 # %%
 
 class Train():
-  def __init__(self, model_name, num_to_use, fold=0, batch_size=16):
+  def __init__(self, model_name, num_to_use, fine_tune, fold=0, batch_size=16 ):
     self.model_name = model_name
     self.num_to_use = num_to_use
     self.fold = fold
     self.batch_size = batch_size
+    self.fine_tune = fine_tune
   def train(self):
     train_gen, val_gen, test_gen = self.data_gen(self.num_to_use)
     with mirrored_strategy.scope():
       model = self.create_model(model_name=self.model_name)
-    # tf.keras.utils.plot_model(model, to_file='model.png', show_shapes=True)
+    # tf.keras.utils.plot_model(model, to_file=f'{self.model_name}.png', show_shapes=True)
     # print('model plot saved!')
-    tmp_model_name = f"{self.model_name}--{date.today()}.h5"
+
+    tmp_model_name = f"{self.model_name}--{self.fine_tune}--{date.today()}.h5"
+    log_dir = f"../data_particleSeg/logs/fit/{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}{self.model_name}{self.fine_tune}"
     callbacks = [
         tf.keras.callbacks.ModelCheckpoint(f"{output_dir}{tmp_model_name}", save_best_only=True),
-        tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=3)
+        #tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=7),
+        tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1),
+	      #tf.keras.callbacks.LearningRateScheduler(lambda epoch: 1e-3 * 10 ** (epoch / 9))
     ]
     steps_per_epoch = train_gen.__len__()
     validation_steps = val_gen.__len__()
@@ -62,7 +56,7 @@ class Train():
     hist_df = pd.DataFrame(history.history)
     
     model = tf.keras.models.load_model(f"{output_dir}{tmp_model_name}", custom_objects={"UpdatedMeanIoU": UpdatedMeanIoU})
-    
+
     loss, iou = model.evaluate(test_gen)
     iou = "{0:.2%}".format(iou)[:-1]
     permanet_model_name = f"{iou}--{self.num_used}--{tmp_model_name}"
@@ -74,9 +68,9 @@ class Train():
 
   def create_model(self,model_name):
     if model_name == 'custom':
-      return self.custom_unet()
+      return models.custom_unet()
     else:
-      return self.pretrained_model(model_name)
+      return models.pretrained_model(model_name, fine_tune_at=100)
 
   def data_gen(self, num_to_use):
     data_paths = pathlib.Path(data_dir)
@@ -111,139 +105,23 @@ class Train():
     test_gen = particles(self.batch_size, img_size, test_input_img_paths, test_target_img_paths, fold=self.fold)
     return train_gen, val_gen, test_gen
 
-
-  def custom_unet(self):
-    inputs = tf.keras.Input(shape=img_size + (3,))
-    ### [First half of the network: downsampling inputs] ###
-
-    # Entry block
-    x = layers.Conv2D(32, 3, strides=2, padding="same")(inputs)
-    x = layers.BatchNormalization()(x)
-    x = layers.Activation("relu")(x)
-    previous_block_activation = x  # Set aside residual
-
-    # Blocks 1, 2, 3 are identical apart from the feature depth.
-    for filters in [64, 128, 256]:
-        x = layers.Activation("relu")(x)
-        x = layers.SeparableConv2D(filters, 3, padding="same")(x)
-        x = layers.BatchNormalization()(x)
-
-        x = layers.Activation("relu")(x)
-        x = layers.SeparableConv2D(filters, 3, padding="same")(x)
-        x = layers.BatchNormalization()(x)
-
-        x = layers.MaxPooling2D(3, strides=2, padding="same")(x)
-
-        # Project residual
-        residual = layers.Conv2D(filters, 1, strides=2, padding="same")(
-            previous_block_activation
-        )
-        x = layers.add([x, residual])  # Add back residual
-        previous_block_activation = x  # Set aside next residual
-
-    ### [Second half of the network: upsampling inputs] ###
-
-    for filters in [256, 128, 64, 32]:
-        x = layers.Activation("relu")(x)
-        x = layers.Conv2DTranspose(filters, 3, padding="same")(x)
-        x = layers.BatchNormalization()(x)
-
-        x = layers.Activation("relu")(x)
-        x = layers.Conv2DTranspose(filters, 3, padding="same")(x)
-        x = layers.BatchNormalization()(x)
-
-        x = layers.UpSampling2D(2)(x)
-
-        # Project residual
-        residual = layers.UpSampling2D(2)(previous_block_activation)
-        residual = layers.Conv2D(filters, 1, padding="same")(residual)
-        x = layers.add([x, residual])  # Add back residual
-        previous_block_activation = x  # Set aside next residual
-
-    # Add a per-pixel classification layer
-    outputs = layers.Conv2D(num_classes, 3, activation="softmax", padding="same")(x)
-
-    # Define the model
-    model = tf.keras.Model(inputs, outputs)
-    model.compile(optimizer='rmsprop', loss="sparse_categorical_crossentropy", 
-            metrics=[UpdatedMeanIoU(num_classes=num_classes)])
-    return model
-  
-  def pretrained_model(self,model_name):
-    class_method = getattr(tf.keras.applications, model_name)
-    base_model = class_method(input_shape=[256, 256, 3], include_top=False, weights='imagenet')
-    shape_128 = []
-    shape_64 = []
-    shape_32 = []
-    shape_16 = []
-    shape_8 = []
-    for layer in base_model.layers:
-        if layer.__class__.__name__ == 'Activation':
-            if layer.input_shape[1:3] == (128,128):
-                shape_128.append(layer.get_config()['name'])
-            elif layer.input_shape[1:3] == (64,64):
-                shape_64.append(layer.get_config()['name'])
-            elif layer.input_shape[1:3] == (32,32):
-                shape_32.append(layer.get_config()['name'])
-            elif layer.input_shape[1:3] == (16,16):
-                shape_16.append(layer.get_config()['name'])
-            elif layer.input_shape[1:3] == (8,8):
-                shape_8.append(layer.get_config()['name'])
-    layer_names = [
-                    shape_128[-1], # size 128*128
-                    shape_64[-1],  # size 64*64
-                    shape_32[-1],  # size 32*32
-                    shape_16[-1],  # size 16*16
-                    shape_8[-1]        # size 8*8
-    ]
-    base_model_outputs = [base_model.get_layer(name).output for name in layer_names] 
-    down_stack = tf.keras.Model(inputs=base_model.input, outputs=base_model_outputs)
-    down_stack.trainable = True
-    model = self.unet_model(output_channels=3, down_stack=down_stack)
-    model.compile(optimizer='adam',
-              loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-              metrics=[UpdatedMeanIoU(num_classes=num_classes)])
-    return model
-    
-  def unet_model(self,output_channels:int, down_stack):
-    inputs = tf.keras.layers.Input(shape=[256, 256, 3])
-
-    # Downsampling through the model
-    skips = down_stack(inputs)
-    x = skips[-1]
-    skips = reversed(skips[:-1])
-    up_stack = [
-        pix2pix.upsample(1024, 3),  # 4x4 -> 8x8
-        pix2pix.upsample(512, 3),  # 8x8 -> 16x16
-        pix2pix.upsample(256, 3),  # 16x16 -> 32x32
-        pix2pix.upsample(128, 3),   # 32x32 -> 64x64
-    ]
-    # Upsampling and establishing the skip connections
-    for up, skip in zip(up_stack, skips):
-      x = up(x)
-      concat = tf.keras.layers.Concatenate()
-      x = concat([x, skip])
-
-    # This is the last layer of the model
-    last = tf.keras.layers.Conv2DTranspose(
-        filters=output_channels, kernel_size=3, strides=2,
-        padding='same')  #64x64 -> 128x128
-    x = last(x)
-    return tf.keras.Model(inputs=inputs, outputs=x)
-
 base_models = [
-  'custom',
-  'DenseNet121',
-  'DenseNet169',
-  'DenseNet201',
+  #'custom',
+  #'DenseNet121',
+  #'DenseNet169',
+  #'DenseNet201',
   'EfficientNetB0',
   'ResNet101'
 ]
 if __name__ =='__main__':
   if sys.argv[1] == 'all':
     for model in base_models:
-      new_train = Train(model, -1, batch_size=32)
+      new_train = Train(model, 40000, batch_size=32)
+      new_train.train()
+  elif sys.argv[1] == 'fine_tune':
+    for fine_tune in [0,50,100,200,300,500]:
+      new_train = Train('DenseNet169',40000, batch_size=16, fine_tune=fine_tune)
       new_train.train()
   else:
-    new_train = Train(sys.argv[1], -1, batch_size=64)
+    new_train = Train(sys.argv[1], 40000, batch_size=16)
     new_train.train()
