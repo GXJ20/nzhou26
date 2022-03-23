@@ -1,8 +1,4 @@
-'''
-things to be fixed:
-1. Change train class to an object-orient style
 
-'''
 import argparse
 import starfile
 import pandas as pd

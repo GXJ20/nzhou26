@@ -32,12 +32,14 @@ class Train():
     self.fine_tune = fine_tune
   def train(self):
     train_gen, val_gen, test_gen = self.data_gen(self.num_to_use)
+    
     with mirrored_strategy.scope():
       model = self.create_model(model_name=self.model_name)
     # tf.keras.utils.plot_model(model, to_file=f'{self.model_name}.png', show_shapes=True)
     # print('model plot saved!')
 
     tmp_model_name = f"{self.model_name}--{self.fine_tune}--{date.today()}.h5"
+    # set up tensorboard to keep track of this training
     log_dir = f"../data_particleSeg/logs/fit/{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}{self.model_name}{self.fine_tune}"
     callbacks = [
         tf.keras.callbacks.ModelCheckpoint(f"{output_dir}{tmp_model_name}", save_best_only=True),
@@ -71,7 +73,7 @@ class Train():
       return models.custom_unet()
     else:
       return models.pretrained_model(model_name, fine_tune_at=100)
-
+  # this function controls data generation
   def data_gen(self, num_to_use):
     data_paths = pathlib.Path(data_dir)
     input_img_paths = list(data_paths.glob("*/raw/*.npy"))

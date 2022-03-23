@@ -4,6 +4,9 @@ from helper import UpdatedMeanIoU
 from tensorflow_examples.models.pix2pix import pix2pix
 img_size = (256, 256)
 num_classes = 3
+# this script create different types of unet models
+
+# this model was inspired by official keras tutorial
 def custom_unet():
     inputs = tf.keras.Input(shape=img_size + (3,))
     ### [First half of the network: downsampling inputs] ###
@@ -58,6 +61,7 @@ def custom_unet():
             metrics=[UpdatedMeanIoU(num_classes=num_classes)])
     return model
 
+# this function combines established archtecture as downsampling block
 def pretrained_model(model_name, fine_tune_at):
     class_method = getattr(tf.keras.applications, model_name)
     base_model = class_method(input_shape=[256, 256, 3], include_top=False, weights='imagenet')
@@ -66,6 +70,7 @@ def pretrained_model(model_name, fine_tune_at):
     shape_32 = []
     shape_16 = []
     shape_8 = []
+    # get activate layers, or it could be intepreted as the layers reduce size
     for layer in base_model.layers:
         if layer.__class__.__name__ == 'Activation':
             if layer.input_shape[1:3] == (128,128):
@@ -85,19 +90,23 @@ def pretrained_model(model_name, fine_tune_at):
                     shape_16[-1],  # size 16*16
                     shape_8[-1]        # size 8*8
     ]
+    # construct the downsampling block
     base_model_outputs = [base_model.get_layer(name).output for name in layer_names] 
     down_stack = tf.keras.Model(inputs=base_model.input, outputs=base_model_outputs)
     down_stack.trainable = True
     print(len(down_stack.layers))
+    # set number of layers that are trainable
     for layer in down_stack.layers[:fine_tune_at]:
         layer.trainable = False
     
+    # it calls the upsampling block and return a whole model
     model = unet_model(output_channels=3, down_stack=down_stack)
     model.compile(optimizer='adam',
               loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
               metrics=[UpdatedMeanIoU(num_classes=num_classes)])
     return model
     
+# this function constrcut downsampling block, which is reusable by all upsampling block
 def unet_model(output_channels, down_stack):
     inputs = tf.keras.layers.Input(shape=[256, 256, 3])
 
